@@ -1,21 +1,3 @@
-/*
-	Payday 2 Save Manager - Backup and Recovery for your favorite games saves
-    Copyright (C) 2013  Michael Rosenberg
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package PD2SM;
 
 import java.awt.EventQueue;
@@ -148,23 +130,32 @@ public class Frame extends JFrame {
 	    tabRpanel.add(scrollPane);
 	    list = new JList(dlm);
 	    list.addKeyListener(new KeyListener() 
-	    {            @Override
+	    {           
             public void keyPressed(KeyEvent e) 
 	    	{
                 if (e.getKeyCode() == KeyEvent.VK_DELETE) 
                 {
-                	try 
-                	{
-                    File f = new File(backups+"\\"+list.getSelectedValue());
-                    delete(f);
-                    textArea.setText(textArea.getText()+"\nDeleting Backup "+ f.getName());
-                    getBackups();
-                	}
-                	catch (IOException ioe)
-                	{
-                		System.out.println(ioe);
-                		textArea.setText(textArea.getText()+"\nDeleting Backup Failed. Error Below\n"+ ioe);
-                	}
+                	Object[] options = {"Yes, please", "No way!"};
+        			int n = JOptionPane.showOptionDialog(null, "Are you sure you want to delete the selected backup?", "WOAH!?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        			if (n == JOptionPane.YES_OPTION) 
+        			{
+        				try 
+        				{
+        					File f = new File(backups+"\\"+list.getSelectedValue());
+        					delete(f);
+        					textArea.setText(textArea.getText()+"\nDeleting Backup "+ f.getName());
+        					getBackups();
+        				}
+        				catch (IOException ioe)
+        				{
+        					System.out.println(ioe);
+        					textArea.setText(textArea.getText()+"\nDeleting Backup Failed. Error Below\n"+ ioe);
+        				}
+        			}
+        			else
+        			{
+        				textArea.setText(textArea.getText()+"\nDeletion Cancelled");
+        			}
                 }
             }
             public void keyReleased(KeyEvent e) { }
