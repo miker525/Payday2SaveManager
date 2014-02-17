@@ -3,12 +3,17 @@ package PD2SM;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -23,21 +28,22 @@ import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class Frame extends JFrame {
-
+	private static final long serialVersionUID = -2650279427914996809L;
 	private JPanel contentPane, tabBpanel, tabRpanel, tabDpanel;
 	private static JTextField textField;
 	private static JTextArea textArea;
-	private static JButton btnNewButton, btnNewButton_1;
-	private static JList list, listsid;
+	private static JButton btnNewButton, btnNewButton_1,btnNewButton_2;
+	private static JList<String> list, listsid;
 	private static DefaultListModel<String> dlm = new DefaultListModel<String>(), dlm2 = new DefaultListModel<String>();
 	private static String paydayloc = null;
-	private static boolean installed = false, xsixfour = true;
+	private static String paydaySaveloc = null;
 	private static File backups, createbak;
 
 	public static void main(String[] args) 
@@ -121,41 +127,21 @@ public class Frame extends JFrame {
 	    JScrollPane scrollPane_2 = new JScrollPane();
 	    scrollPane_2.setBounds(10, 35, 389, 54);
 	    tabBpanel.add(scrollPane_2);
-	    listsid = new JList(dlm2);
+	    listsid = new JList<String>(dlm2);
 	    scrollPane_2.setViewportView(listsid);
 	    tabbedPane.addTab("Restore", tabRpanel);
 	    tabRpanel.setLayout(null);
 	    JScrollPane scrollPane = new JScrollPane();
 	    scrollPane.setBounds(10, 11, 389, 82);
 	    tabRpanel.add(scrollPane);
-	    list = new JList(dlm);
+	    list = new JList<String>(dlm);
 	    list.addKeyListener(new KeyListener() 
 	    {           
             public void keyPressed(KeyEvent e) 
 	    	{
                 if (e.getKeyCode() == KeyEvent.VK_DELETE) 
                 {
-                	Object[] options = {"Yes, please", "No way!"};
-        			int n = JOptionPane.showOptionDialog(null, "Are you sure you want to delete the selected backup?", "WOAH!?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        			if (n == JOptionPane.YES_OPTION) 
-        			{
-        				try 
-        				{
-        					File f = new File(backups+"\\"+list.getSelectedValue());
-        					delete(f);
-        					textArea.setText(textArea.getText()+"\nDeleting Backup "+ f.getName());
-        					getBackups();
-        				}
-        				catch (IOException ioe)
-        				{
-        					System.out.println(ioe);
-        					textArea.setText(textArea.getText()+"\nDeleting Backup Failed. Error Below\n"+ ioe);
-        				}
-        			}
-        			else
-        			{
-        				textArea.setText(textArea.getText()+"\nDeletion Cancelled");
-        			}
+                	deleteDialog();
                 }
             }
             public void keyReleased(KeyEvent e) { }
@@ -170,8 +156,21 @@ public class Frame extends JFrame {
 	    		restoreSave();
 	    	}
 	    });
-	    btnNewButton_1.setBounds(10, 95, 389, 23);
+	    btnNewButton_1.setBounds(10, 95, 194, 23);
 	    tabRpanel.add(btnNewButton_1);
+	    
+	    btnNewButton_2 = new JButton("Delete Save");
+	    btnNewButton_2.addActionListener(new ActionListener() 
+	    {
+	    	public void actionPerformed(ActionEvent e) 
+	    	{
+	    		deleteDialog();
+	    	}
+	    });
+	    btnNewButton_2.setBounds(205, 95, 194, 23);
+	    tabRpanel.add(btnNewButton_2);
+	    
+	    
 	    tabbedPane.addTab("Debug", tabDpanel);
 	    tabDpanel.setLayout(null);
 	    JScrollPane scrollPane_1 = new JScrollPane();
@@ -183,19 +182,39 @@ public class Frame extends JFrame {
 	    scrollPane_1.setViewportView(textArea);
 	    contentPane.add(tabbedPane);
 	}
-	
-	public static void initializesftw()
-	{
-		try 
+	private static void deleteDialog() {
+    	Object[] options = {"Yes, please", "No way!"};
+		int n = JOptionPane.showOptionDialog(null, "Are you sure you want to delete the selected backup?", "WOAH!?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+		if (n == JOptionPane.YES_OPTION) 
 		{
-			paydayloc = System.getenv("ProgramFiles(X86)") + "\\Steam\\steamapps\\Common\\Payday 2";
+			try 
+			{
+				File f = new File(backups+"\\"+list.getSelectedValue());
+				delete(f);
+				textArea.setText(textArea.getText()+"\nDeleting Backup "+ f.getName());
+				getBackups();
+			}
+			catch (IOException ioe)
+			{
+				System.out.println(ioe);
+				textArea.setText(textArea.getText()+"\nDeleting Backup Failed. Error Below\n"+ ioe);
+			}
+		}
+		else
+		{
+			textArea.setText(textArea.getText()+"\nDeletion Cancelled");
+		}
+	}
+	
+	public static boolean initializesWithPath(String path) {
+		if(path!=null) {
+			paydayloc=path+"\\steamapps\\Common\\Payday 2";
 			File pdf = new File(paydayloc);
 			if (pdf.exists())
 			{
-				System.out.println("Payday 2 Folder found in (X86)");
+				System.out.println("Payday 2 Folder found in "+path);
 				textArea.setText(textArea.getText()+"\nPayday 2 Folder Has Been Located");
-				installed = true;
-				pdf = new File(paydayloc + "\\backups");
+				pdf = new File(path + "\\backups");
 				textArea.setText(textArea.getText()+"\nChecking For Backups Directory");
 				if(!pdf.exists())
 				{
@@ -209,55 +228,101 @@ public class Frame extends JFrame {
 					backups = pdf;
 					getBackups();
 				}
-				xsixfour = true;
+				paydaySaveloc=path + "\\userdata\\";
 				getSteamID();
+				return true;
 			}
-			else
-			{
+		}
+		return false;
+	}
+	public static void initializesftw()
+	{
+		boolean paydayFound=false;
+
+		String steamPath=getPath();
+		textField.setEnabled(false);
+		btnNewButton.setEnabled(false);
+		btnNewButton_1.setEnabled(false);
+		btnNewButton_2.setEnabled(false);
+		list.setEnabled(false);
+		//Try cache
+		paydayFound=initializesWithPath(steamPath);
+		if(!paydayFound) {
+			//Try x86
+			steamPath=System.getenv("ProgramFiles(X86)")+"\\Steam";
+			paydayFound=initializesWithPath(steamPath);
+			if(!paydayFound) {
+				//Try x64
 				textArea.setText(textArea.getText()+"\nPayday 2 Folder Not Found in (X86)");
-				System.out.println("Payday 2 Folder Not Found in (X86)");
+				steamPath=System.getenv("ProgramFiles")+"\\Steam";
+				paydayFound=initializesWithPath(steamPath);
+				if(!paydayFound) {
+					//Try userInput
+					textArea.setText(textArea.getText()+"\nPayday 2 Folder Not Found in (Program Files)");
+					steamPath = (String)JOptionPane.showInputDialog(
+					                    null,
+					                    "Steam Location:",
+					                    "Where in the world is Dallas?",
+					                    JOptionPane.PLAIN_MESSAGE,
+					                    null,
+					                    null,
+					                    System.getenv("ProgramFiles")+"\\Steam");
+					paydayFound=initializesWithPath(steamPath);
+					//Bah, not even the user knows where it is.  Give up.
+					if(!paydayFound) {
+						textArea.setText(textArea.getText()+"\nPayday 2 Is Either Not Installed On Your Machine Or Is Installed To An Alternate Location. Please Fix Before Continuing");
+						JOptionPane.showMessageDialog(null, "Could not find payday at "+steamPath+"\\steamapps\\Common\\Payday 2","Unable to start", JOptionPane.INFORMATION_MESSAGE);
+					}
+				}
 			}
 		}
-		catch (Exception e) 
-		{
-			System.out.println(e);
-			paydayloc = System.getenv("ProgramFiles") + "\\Steam\\steamapps\\Common\\Payday 2";
-			File pdf = new File(paydayloc);
-			if (pdf.exists())
-			{
-				 System.out.println("Payday 2 found in (X86)");
-				 textArea.setText(textArea.getText()+"\nPayday 2 Has Been Located");
-				 installed = true;
-				 textArea.setText(textArea.getText()+"\nChecking For Backups Directory");
-				 pdf = new File(paydayloc + "\\backups");
-				 if(!pdf.exists())
-				 {
-					pdf.mkdir();
-					textArea.setText(textArea.getText()+"\nNo Backup found. Creating New Backup Directory");
-					backups = pdf;
-				 }
-				 else
-				 {
-					textArea.setText(textArea.getText()+"\nBackup found!");
-					backups = pdf;
-					getBackups();
-				 }
-				 xsixfour = false;
-				 getSteamID();
-		    }
-			else
-			{
-				 textArea.setText(textArea.getText()+"\nPayday 2 Folder Not Found in (X86)");
-				 System.out.println("Payday 2 Folder Not Found in (X86)");
+		if(paydayFound) {
+			textField.setEnabled(true);
+			btnNewButton.setEnabled(true);
+			btnNewButton_1.setEnabled(true);
+			btnNewButton_2.setEnabled(true);
+			list.setEnabled(true);
+			savePath(steamPath);
+		}
+	}
+	private static String getPath() {
+		BufferedReader reader=null;
+		File f=new File("payday2SaveManagerPath.txt");
+		String path=null;
+		try {
+			if(f.exists()) {
+				reader=new BufferedReader(new FileReader(f));
+				path=reader.readLine();
+			}
+		} catch(IOException ioe) {
+			System.out.println(ioe);
+			textArea.setText(textArea.getText()+ "\nError Encountered. Error Message Below\n"+ioe);
+		} finally {
+			if(reader!=null) {
+				try {
+					reader.close();
+				} catch(IOException e) {}
 			}
 		}
-		if (!installed)
-		{
-			textArea.setText(textArea.getText()+"\nPayday 2 Is Either Not Installed On Your Machine Or Is Installed To An Alternate Location. Please Fix Before Continuing");
-			textField.setEnabled(false);
-			btnNewButton.setEnabled(false);
-			btnNewButton_1.setEnabled(false);
-			list.setEnabled(false);
+		return path;
+	}
+	private static void savePath(String path) {
+		BufferedWriter writer=null;
+		File f=new File("payday2SaveManagerPath.txt");
+		try {
+			if(f.exists())
+				f.delete();
+			writer=new BufferedWriter(new FileWriter(f));
+			writer.write(path);
+		} catch(IOException ioe) {
+			System.out.println(ioe);
+			textArea.setText(textArea.getText()+ "\nError Encountered. Error Message Below\n"+ioe);
+		} finally {
+			if(writer!=null) {
+				try {
+					writer.close();
+				} catch(IOException e) {}
+			}
 		}
 	}
 	
@@ -280,35 +345,35 @@ public class Frame extends JFrame {
 
 	public static void createBackup()
 	{
-		createbak = new File(backups + "\\" + listsid.getSelectedValue() + "-" + textField.getText());
-		createbak.mkdir();
-		String x = null;
-		if (xsixfour)
-		{
-			x = System.getenv("ProgramFiles(X86)") + "\\Steam\\userdata\\" + listsid.getSelectedValue() + "\\218620\\remote";
-		}
-		else
-		{
-			x = System.getenv("ProgramFiles") + "\\Steam\\userdata\\" + listsid.getSelectedValue() + "\\218620\\remote";
-		}
-		File fx = new File(x);
-		File[] lx = fx.listFiles();
-		for (File f: lx)
-		{
-			try
+		String selectedProfile=listsid.getSelectedValue();
+		if(selectedProfile==null && dlm2.size()==1)
+			selectedProfile=dlm2.firstElement();
+		if(selectedProfile!=null) {
+			createbak = new File(backups + "\\" + selectedProfile + "-" + textField.getText());
+			createbak.mkdir();
+			String x = null;
+			x = paydaySaveloc + selectedProfile + "\\218620\\remote";
+			
+			File fx = new File(x);
+			File[] lx = fx.listFiles();
+			for (File f: lx)
 			{
-				File bak = new File(createbak.getPath() + "\\" + f.getName());
-				copyFile(f, bak);
-				textArea.setText(textArea.getText()+"\n"+f.getName()+" Has Been Copied to Backup "+createbak.getPath());
+				try
+				{
+					File bak = new File(createbak.getPath() + "\\" + f.getName());
+					copyFile(f, bak);
+					textArea.setText(textArea.getText()+"\n"+f.getName()+" Has Been Copied to Backup "+createbak.getPath());
+				}
+				catch (IOException ioe)
+				{
+					System.out.println(ioe);
+					textArea.setText(textArea.getText()+ "\nError Encountered. Error Message Below\n"+ioe);
+				}
 			}
-			catch (IOException ioe)
-			{
-				System.out.println(ioe);
-				textArea.setText(textArea.getText()+ "\nError Encountered. Error Message Below\n"+ioe);
-			}
-		}
-		JOptionPane.showMessageDialog(null, "Backup Completed Successfully! YAY!", "Backup Complete!", JOptionPane.INFORMATION_MESSAGE);
-		
+			getBackups();
+			JOptionPane.showMessageDialog(null, "Backup Completed Successfully! YAY!", "Backup Complete!", JOptionPane.INFORMATION_MESSAGE);
+		} else
+			JOptionPane.showMessageDialog(null, "Select a profile", "No backup", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	private static void copyFile(File sourceFile, File destFile)
@@ -319,33 +384,38 @@ public class Frame extends JFrame {
 		if (!destFile.exists()) {
 			destFile.createNewFile();
 		}
+		FileInputStream sourceStream=null;
+		FileOutputStream destinationStream=null;
 		FileChannel source = null;
 		FileChannel destination = null;
-		source = new FileInputStream(sourceFile).getChannel();
-		destination = new FileOutputStream(destFile).getChannel();
-		if (destination != null && source != null) {
-			destination.transferFrom(source, 0, source.size());
+		try {
+			sourceStream=new FileInputStream(sourceFile);
+			destinationStream=new FileOutputStream(destFile);
+			source=sourceStream.getChannel();
+			destination = destinationStream.getChannel();
+			if (destination != null && source != null) {
+				destination.transferFrom(source, 0, source.size());
+			}
+		} finally {
+			if(sourceStream!=null) {
+				if (source != null) {
+					source.close();
+				}
+				sourceStream.close();
+			}
+			if(destinationStream!=null) {
+				if (destination != null) {
+					destination.close();
+				}
+				destinationStream.close();
+			}
 		}
-		if (source != null) {
-			source.close();
-		}
-		if (destination != null) {
-			destination.close();
-		}
-
 	}
 	
 	private static void getSteamID()
 	{
-		String x = null;
-		if (xsixfour)
-		{
-			x = System.getenv("ProgramFiles(X86)") + "\\Steam\\userdata\\";
-		}
-		else
-		{
-			x = System.getenv("ProgramFiles") + "\\Steam\\userdata\\";
-		}
+		String x = paydaySaveloc;
+		
 		File fx = new File(x);
 		File[] lx = fx.listFiles();
 		for (File f: lx)
@@ -359,14 +429,8 @@ public class Frame extends JFrame {
 	{
 		String paysaveloc = null;
 		String sid = ((String) list.getSelectedValue()).split("\\-")[0];
-		if (xsixfour)
-		{
-			paysaveloc = System.getenv("ProgramFiles(X86)") + "\\Steam\\userdata\\" + sid + "\\218620\\remote";
-		}
-		else
-		{
-			paysaveloc = System.getenv("ProgramFiles") + "\\Steam\\userdata\\" + sid + "\\218620\\remote";
-		}
+		paysaveloc = paydaySaveloc + sid + "\\218620\\remote";
+		
 		File paysavedir = new File(paysaveloc); //
 		File[] filecount = paysavedir.listFiles();
 		if (filecount.length>0)
