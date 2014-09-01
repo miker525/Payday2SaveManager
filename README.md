@@ -11,7 +11,8 @@ Features:
 -Debug Window outputs everything that is donefor user logging  
 -Easy Deletion of older unwanted backups  
 
-License: Payday 2 Save Manage is licenced with GPLv3. To learn more about GPLv3 and the rights it gives you please view the gpl.txt file included in this repo.
+License:  
+Payday 2 Save Manage is licenced with GPLv3. To learn more about GPLv3 and the rights it gives you please view the gpl.txt file included in this repo.
 
 Credits:  
   Miker525 - Versions 1.0 - 1.6 - Programming, UI Design  
