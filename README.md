@@ -20,4 +20,8 @@ Credits:
   Overkill Software - Retains rights to Images & logos used, and granting us permission to use them.  
   
 Current Version:  
-1.7
+1.8
+
+1.8 Update Log:  
+-Removed Steam Location cache added by DKATyler. I felt there was really no need for this and prefer the application to detect where Steam and Payday 2 directories are on the fly rather than store it in an external file.  
+-Fixed a bug created in version 1.7 in which the backups folder was being created and checked for in the Steam directory as opposed to in the Payday 2 directory. This bug made the version incompatible with prior versions of the software. This has now been fixed and version 1.8 picks up working the same as versions 1.6 and below.
