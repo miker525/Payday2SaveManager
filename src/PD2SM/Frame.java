@@ -1,19 +1,23 @@
-package PD2SM;
+/*
+ * Payday 2 Save Manager
+ * Version 1.8
+ * http://github.com/Miker525 || http://MikeRosenberger.com
+ * Currently supports all versions of Payday 2
+ * For source code & Licensing information please visit:
+ * https://github.com/miker525/Payday2SaveManager
+ */
 
+package PD2SM;
+// Imported Libraries
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -28,7 +32,6 @@ import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
-
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -45,7 +48,7 @@ public class Frame extends JFrame {
 	private static String paydayloc = null;
 	private static String paydaySaveloc = null;
 	private static File backups, createbak;
-
+	
 	public static void main(String[] args) 
 	{
 		EventQueue.invokeLater(new Runnable() 
@@ -182,6 +185,7 @@ public class Frame extends JFrame {
 	    scrollPane_1.setViewportView(textArea);
 	    contentPane.add(tabbedPane);
 	}
+	
 	private static void deleteDialog() {
     	Object[] options = {"Yes, please", "No way!"};
 		int n = JOptionPane.showOptionDialog(null, "Are you sure you want to delete the selected backup?", "WOAH!?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
@@ -214,7 +218,7 @@ public class Frame extends JFrame {
 			{
 				System.out.println("Payday 2 Folder found in "+path);
 				textArea.setText(textArea.getText()+"\nPayday 2 Folder Has Been Located");
-				pdf = new File(path + "\\backups");
+				pdf = new File(pdf + "\\backups");
 				textArea.setText(textArea.getText()+"\nChecking For Backups Directory");
 				if(!pdf.exists())
 				{
@@ -239,14 +243,13 @@ public class Frame extends JFrame {
 	{
 		boolean paydayFound=false;
 
-		String steamPath=getPath();
+		//String steamPath=getPath();
+		String steamPath = null;
 		textField.setEnabled(false);
 		btnNewButton.setEnabled(false);
 		btnNewButton_1.setEnabled(false);
 		btnNewButton_2.setEnabled(false);
 		list.setEnabled(false);
-		//Try cache
-		paydayFound=initializesWithPath(steamPath);
 		if(!paydayFound) {
 			//Try x86
 			steamPath=System.getenv("ProgramFiles(X86)")+"\\Steam";
@@ -282,50 +285,9 @@ public class Frame extends JFrame {
 			btnNewButton_1.setEnabled(true);
 			btnNewButton_2.setEnabled(true);
 			list.setEnabled(true);
-			savePath(steamPath);
 		}
 	}
-	private static String getPath() {
-		BufferedReader reader=null;
-		File f=new File("payday2SaveManagerPath.txt");
-		String path=null;
-		try {
-			if(f.exists()) {
-				reader=new BufferedReader(new FileReader(f));
-				path=reader.readLine();
-			}
-		} catch(IOException ioe) {
-			System.out.println(ioe);
-			textArea.setText(textArea.getText()+ "\nError Encountered. Error Message Below\n"+ioe);
-		} finally {
-			if(reader!=null) {
-				try {
-					reader.close();
-				} catch(IOException e) {}
-			}
-		}
-		return path;
-	}
-	private static void savePath(String path) {
-		BufferedWriter writer=null;
-		File f=new File("payday2SaveManagerPath.txt");
-		try {
-			if(f.exists())
-				f.delete();
-			writer=new BufferedWriter(new FileWriter(f));
-			writer.write(path);
-		} catch(IOException ioe) {
-			System.out.println(ioe);
-			textArea.setText(textArea.getText()+ "\nError Encountered. Error Message Below\n"+ioe);
-		} finally {
-			if(writer!=null) {
-				try {
-					writer.close();
-				} catch(IOException e) {}
-			}
-		}
-	}
-	
+
 	public static void getBackups()
 	{
 		dlm.clear();
@@ -340,7 +302,7 @@ public class Frame extends JFrame {
 		{  
 			dlm.addElement(bup.getName().toString());
 		} 
-		textArea.setText(textArea.getText()+"\nAdding Backups To Backup List");
+		textArea.setText(textArea.getText()+"\nPopulating Backup List");
 	}
 
 	public static void createBackup()
